@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Login</title>
+  <link rel="stylesheet" href="/stylesheets/style.css">
+</head>
+
+<body>
+  <h1>hw01</h1>
+  <h2>login</h2>
+
+  <!-- id, pw 전송 -->
+  <form id="loginForm">
+    <p>id</p>
+    <input type="text" placeholder="enter id" id='id' required />
+
+    <p>pw</p>
+    <input type="password" placeholder="enter pw" id='pw' required />
+
+    <button type="submit" id="loginButton">로그인</button>
+
+    <a href="/register">회원가입</a>
+  </form>
+
+  <script>
+    const form = document.getElementById('loginForm');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault(); // 바로 넘어가는 거 막기
+
+      const id = document.getElementById('id').value;
+      const pw = document.getElementById('pw').value;
+
+      try {
+        // 로그인 요청
+        const res = await fetch('/login/userlogin', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            id, pw
+          }),
+        });
+
+        if (res.status === 200) {
+          const result = await res.json();
+
+          // 로그인 성공 시 토큰을 로컬 스토리지에 저장
+          if (result.token) {
+            localStorage.setItem('token', result.token);
+            localStorage.setItem('loginId', id);
+            console.log("로그인 성공:", result.message);
+            console.log(result.token);
+
+            // 토큰을 포함하여 /home으로 리다이렉트
+            window.location.href = '/home';
+          }
+
+          else {
+            console.log("로그인 실패: 토큰 없음");
+            alert("아이디 또는 비밀번호가 일치하지 않습니다.");
+          }
+        } else {
+          alert("아이디 또는 비밀번호가 일치하지 않습니다.");
+          console.log("로그인 실패");
+        }
+      } catch (error) {
+        console.error("에러 발생:", error);
+      }
+    });
+
+
+    
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>register</title>
+</head>
+
+<body>
+    <h1>회원가입 페이지</h1>
+
+    <p>id 입력 </p>
+    <input type="text" id="id" placeholder="id를 입력하세요" />
+
+    <button id="checkid">
+        id 중복 체크
+    </button>
+
+    <p>name 입력 </p>
+    <input type="text" id="name" placeholder="이름을 입력하세요" />
+
+    <p>pw1 입력</p>
+    <input type="password" name="pw1" id="pw1" placeholder="pw1을 입력하세요" />
+
+    <p>pw2 입력 </p>
+    <input type="password" name="pw2" id="pw2" placeholder="pw2를 입력하세요" onblur="onblur_event();" />
+
+    <button type="submit" id="submit" disabled="true">
+        회원가입
+    </button>
+    <script>
+        document.getElementById('checkid').addEventListener('click', function (event) {
+            event.preventDefault();
+
+            const id = document.getElementById('id').value;
+            console.log('Sending ID for check:', id); // 프론트엔드에서 확인
+
+            if (id === '') {
+                alert('아이디를 입력해주세요');
+                return;
+            }
+
+
+            function btnActive() {
+                const target = document.getElementById('submit');
+                target.disabled = false;
+            }
+
+            function btnDisabled() {
+                const target = document.getElementById('submit');
+                target.disabled = true;
+            }
+
+            fetch('/register/checkid', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id }),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Check ID Response:', data); // 응답 확인 로그
+                    const checkid = document.getElementById('checkid');
+
+                    if (data.available) {
+                        alert("프론트) 사용가능한 아이디입니다");
+                        checkid.style.color = 'green';
+                        btnActive();
+                    } else {
+                        alert("중복된 아이디입니다");
+                        btnDisabled();
+                        checkid.style.color = 'blue';
+                        document.getElementById('id').value = '';
+                        document.getElementById('id').focus();
+                    }
+                })
+                .catch(error => {
+                    console.error('에러가 발생했습니다.:', error);
+                });
+        });
+
+
+        document.getElementById('submit').addEventListener('click', function (event) {
+            event.preventDefault();
+
+            const id = document.getElementById('id').value;
+            const pw = document.getElementById('pw2').value;
+            const name = document.getElementById('name').value;
+            console.log('Submitting User Data:', { id, pw, name }); // 제출 데이터 확인 로그
+
+            fetch('/register/makeuser', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, pw, name }), // id, pw, name 전송
+            })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.href = '/login';
+                    } else {
+                        alert('회원가입 중 오류가 발생했습니다.');
+                    }
+                })
+                .catch(error => {
+                    console.error('에러가 발생했습니다.:', error);
+                });
+        });
+    </script>
+
+</body>
+
+</html>
+
+
+<!-- <html>
+
+<head>
+    <title>register</title>
+</head>
+
+<body>
+    <h1>회원가입 페이지</h1>
+
+    <p>id 입력 </p>
+    <input type="text" id="id" placeholder="id를 입력하세요" />
+
+    <button id="checkid">
+        id 중복 체크
+    </button>
+
+    <p>pw1 입력</p>
+    <input type="password" name="pw1" id="pw1" placeholder="pw1를 입력하세요" />
+
+    <p>pw2 입력 </p>
+    <input type="password" name="pw2" id="pw2" placeholder="pw2를 입력하세요" onblur="onblur_event();" />
+
+    <button type="submit" id="submit" disabled=true>
+        회원가입
+    </button>
+
+    <script>
+        function onblur_event() {
+            // 비번 일치 여부 확인 onblur
+            var password1 = document.getElementById('pw1').value;
+            var password2 = document.getElementById('pw2').value;
+
+            if (password1 !== password2) {
+                alert("비밀번호가 일치하지 않습니다");
+                btnDisabled();
+                document.getElementById('pw2').value = '';
+            } else {
+                alert("비밀번호가 일치합니다");
+                btnActive();
+            }
+        }
+
+        function btnActive() {
+            const target = document.getElementById('submit');
+            target.disabled = false;
+        }
+
+        function btnDisabled() {
+            const target = document.getElementById('submit');
+            target.disabled = true;
+        }
+
+
+        // id 중복확인
+        document.getElementById('checkid').addEventListener('click', function (event) {
+            event.preventDefault();
+
+            const id = document.getElementById('id').value;
+
+            if (id === '') {
+                alert('아이디를 입력해주세요');
+                return;
+            }
+
+            fetch('/register/checkid', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id }),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    const checkid = document.getElementById('checkid');
+
+                    if (data.available) {
+                        alert("사용가능한 아이디입니다");
+                        checkid.style.color = 'green';
+                        btnActive();
+                    } else {
+                        alert("중복된 아이디입니다");
+                        btnDisabled();
+                        checkid.style.color = 'blue';
+                        document.getElementById('id').value = '';
+                        document.getElementById('id').focus();
+                    }
+                })
+                .catch(error => {
+                    console.error('에러가 발생했습니다.:', error);
+                });
+        });
+
+        // 회원가입 버튼
+        document.getElementById('submit').addEventListener('click', function (event) {
+            event.preventDefault();
+
+            const id = document.getElementById('id').value;
+            const pw = document.getElementById('pw2').value;
+
+            fetch('/register/makeuser', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, pw }), // id,pw json
+            })
+                .then(response => {
+                    if (response.ok) {
+                        window.location.href = '/login';
+                    } else {
+                        alert('회원가입 중 오류가 발생했습니다.');
+                    }
+                })
+                .catch(error => {
+                    console.error('에러가 발생했습니다.:', error);
+                });
+        });
+    </script>
+</body>
+
+</html> -->
